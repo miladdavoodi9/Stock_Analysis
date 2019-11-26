@@ -1,0 +1,141 @@
+Sub VBAStocks()
+
+    ' Declare variables
+    
+'    Dim c As Range
+    Dim close_value As Double
+    Dim lastRow As Long
+    Dim Max As Double
+    Dim Maxvolume As Double
+    Dim Min As Double
+    Dim open_value As Double
+    Dim percent_change As Double
+    Dim stock_valume As Long
+    Dim Summary_table_row As Long
+    Dim Ticker As String
+    Dim total_stock_volume As Double
+    Dim ws As Worksheet
+    Dim yearly_change As Double
+    
+    Summary_table_row = 2
+
+
+    For Each ws In Worksheets
+ 
+    
+        ' Determine the last row
+        lastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+        
+        ' Set column names
+        ws.Cells(1, 9).Value = "Ticker"
+        ws.Cells(1, 10).Value = "Yearly Change"
+        ws.Cells(1, 11).Value = "Percent Change"
+        ws.Cells(1, 12).Value = "Total Stock Volume"
+    
+        ' percentage max and min fields
+         ws.Cells(3, 15).Value = "Greatest % Increase"
+         ws.Cells(4, 15).Value = "Greatest % Decrease"
+         ws.Cells(5, 15).Value = "Greatest Total Volume"
+         ws.Cells(2, 16).Value = "Ticker"
+         ws.Cells(2, 17).Value = "Value"
+     
+    
+        ' Loop through Rows
+        For i = 2 To lastRow
+
+            ' Check to see if tickers are not the same name from above
+            If ws.Cells(i - 1, 1).Value <> ws.Cells(i, 1).Value Then
+
+                ' Find open value
+                open_value = ws.Cells(i, 3).Value
+            
+            End If
+
+            ' Check to see Tickers are within the same name, if not..
+            If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+    
+                ' set ticker name
+                Ticker = ws.Cells(i, 1).Value
+
+                ' set close_value
+                close_value = ws.Cells(i, 6).Value
+    
+                'print percent change in table
+                
+                If open_value <> 0 Then
+                    
+                ws.Range("K" & Summary_table_row).Value = (close_value - open_value) / open_value
+                
+                Else
+                
+                ws.Range("K" & Summary_table_row).Value = 0
+                
+                End If
+                                                     
+                ws.Range("K2:K" & lastRow).NumberFormat = "0.00%"
+
+                ' Calculation for Yearly change
+                ws.Range("J" & Summary_table_row).Value = close_value - open_value
+
+                'add stock volume
+                total_stock_volume = total_stock_volume + ws.Cells(i, 7).Value
+
+                ' Print Ticker name in table
+                ws.Range("I" & Summary_table_row).Value = Ticker
+    
+                'Print Stock Volume in L
+                ws.Range("L" & Summary_table_row).Value = total_stock_volume
+                    
+                ' add conditional coloring to percentage
+                If ws.Range("J" & Summary_table_row).Value >= 0 Then
+                   ws.Range("J" & Summary_table_row).Interior.ColorIndex = 4
+                Else
+                    ws.Range("J" & Summary_table_row).Interior.ColorIndex = 3
+                End If
+    
+                ' Add one to the summary table
+                Summary_table_row = Summary_table_row + 1
+    
+                ' Reset the volume total
+                total_stock_volume = 0
+    
+                Else
+    
+                    ' Add to the total stock volume
+                    total_stock_volume = total_stock_volume + ws.Cells(i, 7).Value
+    
+                End If
+
+        Next i
+
+        'largest percent increase
+        Max = WorksheetFunction.Max(ws.Range("K:K").Value)
+        ws.Cells(3, 17).Value = Max
+           
+
+        Min = Application.WorksheetFunction.Min(ws.Range("K:K").Value)
+        ws.Cells(4, 17).Value = Min
+
+        Maxvolume = WorksheetFunction.Max(ws.Range("L:L").Value)
+        ws.Cells(5, 17).Value = Maxvolume
+            
+        For i = 2 To Summary_table_row
+
+            If ws.Cells(i, 11).Value = Max Then
+                ws.Cells(3, 16).Value = ws.Cells(i, 9).Value
+            End If
+
+            If ws.Cells(i, 11).Value = Min Then
+                ws.Cells(4, 16).Value = ws.Cells(i, 9).Value
+            End If
+
+            If ws.Cells(i, 12).Value = Maxvolume Then
+                ws.Cells(5, 16).Value = ws.Cells(i, 9).Value
+            End If
+        
+        Next i
+
+    Next ws
+
+End Sub
+
